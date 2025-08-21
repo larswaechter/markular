@@ -2,10 +2,12 @@
   <h1>Markular Demo</h1>
   <p>A lightweight Markdown Editor for Angular.</p>
   <div class="container">
-    <markular
-      [(ngModel)]="markdown"
-      (onChange)="handleChange($event)"
-    ></markular>
+    <form [formGroup]="form">
+      <markular
+        (onChange)="handleChange($event)"
+        formControlName="markdown"
+      ></markular>
+    </form>
   </div>
 
   <a href="https://github.com/larswaechter/markular">Leave a ⭐ on GitHub</a>

@@ -163,12 +163,10 @@
             </svg>
           </button>
         }
-        @if (
-          _options().toolbar.blockquote ||
-          _options().toolbar.code?.block ||
-          _options().toolbar.code?.inline ||
-          _options().toolbar.horizontalRule
-        ) {
+        @if (_options().toolbar.blockquote ||
+        _options().toolbar.code?.block ||
+        _options().toolbar.code?.inline ||
+        _options().toolbar.horizontalRule) {
           <div class="separator"></div>
         }
 
@@ -215,7 +213,7 @@
         }
       }
 
-      <button class="previewBtn" (click)="togglePreview()">
+      <button (click)="togglePreview()" class="previewBtn">
         @if (showPreview) {
           <svg
             class="w-6 h-6 text-gray-800 dark:text-white"
@@ -249,18 +247,19 @@
       </button>
     </div>
 
-    <div [hidden]="!showPreview" class="preview" [innerHTML]="preview"></div>
+    <div [hidden]="!showPreview" [innerHTML]="preview" class="preview"></div>
     <textarea
-      [hidden]="showPreview"
       #editor
-      [value]="_val"
-      [placeholder]="this.placeholder()"
-      [rows]="this.rows()"
+      (click)="cacheSelection(editor)"
+      (focusin)="toggleFocused()"
+      (focusout)="toggleFocused()"
       (input)="onInput(editor)"
       (keyup)="cacheSelection(editor)"
-      (click)="cacheSelection(editor)"
-      (focusout)="toggleFocused()"
-      (focusin)="toggleFocused()"
+      [disabled]="isDisabled"
+      [hidden]="showPreview"
+      [placeholder]="this.placeholder()"
+      [rows]="this.rows()"
+      [value]="_val"
     ></textarea>
   </div>
 </div>

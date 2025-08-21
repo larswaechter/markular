@@ -8,6 +8,11 @@ A lightweight Markdown Editor for Angular.
 
 markular is an open source **Mark**down editor for Ang**ular** >= 14.
 
+Features:
+
+- Markdown editing
+- Markdown to HTML rendering
+
 ## 💻 Installation
 
 Install via npm:
@@ -18,7 +23,7 @@ npm i --save markular
 
 ## 🔨 Usage
 
-Import the standalone component.
+Import the standalone component:
 
 ```ts
 import { Markular } from 'markular';
@@ -27,10 +32,17 @@ import { Markular } from 'markular';
 and use it:
 
 ```html
+
 <markular [(ngModel)]="markdown"></markular>
 ```
 
-See the demo app for a more detailed example.
+See the [demo app](https://github.com/larswaechter/markular/tree/main/projects/demo/src/app) for a more detailed example.
+
+## 👋 Shoutouts
+
+A big shoutout to:
+
+- [Flowbite](https://flowbite.com/icons/) for their icons
 
 ## 🧩 Contributing
 

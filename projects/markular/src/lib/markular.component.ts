@@ -9,7 +9,6 @@ import {
   input,
   InputSignal,
   output,
-  Renderer2,
   ViewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -31,7 +30,7 @@ const EDITOR_VALUE_ACCESSOR: any = {
   providers: [EDITOR_VALUE_ACCESSOR],
   templateUrl: './markular.component.html',
   styleUrl: './markular.component.scss',
-  standalone: true
+  standalone: true,
 })
 export class Markular implements AfterViewInit, ControlValueAccessor {
   options: InputSignal<Options | undefined> = input();
@@ -43,27 +42,60 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   preview!: SafeHtml;
   showPreview = false;
   isFocused = false;
-
+  isDisabled = false;
+  _val = '';
+  _options = computed<Options>(() =>
+    this.options() !== undefined ? (this.options() as Options) : DefaultOptions,
+  );
+  @ViewChild('editor') editorRef!: ElementRef<HTMLTextAreaElement>;
   private readonly elementRef = inject(ElementRef<HTMLInputElement>);
   private readonly sanitizer = inject(DomSanitizer);
-
   private cursor = 0;
   private selStart = 0;
   private selEnd = 0;
 
-  _val = '';
-  _onChange = (value: string) => {};
-  _onTouched = () => {};
-
-  _options = computed<Options>(() =>
-    this.options() !== undefined ? (this.options() as Options) : DefaultOptions,
-  );
+  constructor() {
+    marked.setOptions({
+      gfm: true,
+      breaks: true,
+    });
+  }
 
   set value(value: string) {
     this._val = value;
     this._onChange(value);
     this._onTouched();
   }
+
+  private get selection(): string {
+    return this._val.slice(this.selStart, this.selEnd);
+  }
+
+  private get lines() {
+    const lines = this._val.split('\n');
+    const lineRanges = [];
+
+    let lineOffset = 0;
+    for (const line of lines) {
+      lineRanges.push({
+        from: lineOffset,
+        to: lineOffset + line.length,
+        content: line,
+      });
+
+      lineOffset += line.length + 1;
+    }
+
+    const currentLineIdx = lineRanges.findIndex(
+      (line) => this.cursor >= line.from && this.cursor <= line.to,
+    );
+
+    return { currentLineIdx, lines: lineRanges };
+  }
+
+  _onChange = (value: string) => {};
+
+  _onTouched = () => {};
 
   writeValue(value: string) {
     this.value = value;
@@ -78,13 +110,8 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     this._onTouched = onTouched;
   }
 
-  @ViewChild('editor') editorRef!: ElementRef<HTMLTextAreaElement>;
-
-  constructor() {
-    marked.setOptions({
-      gfm: true,
-      breaks: true,
-    });
+  setDisabledState(isDisabled: boolean): void {
+    this.isDisabled = isDisabled;
   }
 
   ngAfterViewInit(): void {
@@ -155,81 +182,6 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     }
 
     console.log('cacheSelection', this.selStart, this.selEnd, this.cursor);
-  }
-
-  private wrap(before: string, after = before, space: boolean = false) {
-    if (space) {
-      return `${before} ${this.selection}${after}`;
-    }
-
-    return `${before}${this.selection}${after}`;
-  }
-
-  private unwrap(before: string, after = before) {
-    const selection = this.selection;
-    let from = before.length;
-
-    // Remove trailing space
-    if (selection.at(from) === ' ') {
-      from++;
-    }
-
-    return selection.slice(from, selection.length - after.length);
-  }
-
-  private insert(snippet: string) {
-    const event = new CustomEvent('insertSnippet', { detail: snippet });
-    window.dispatchEvent(event);
-  }
-
-  private get selection(): string {
-    return this._val.slice(this.selStart, this.selEnd);
-  }
-
-  private get lines() {
-    const lines = this._val.split('\n');
-    const lineRanges = [];
-
-    let lineOffset = 0;
-    for (const line of lines) {
-      lineRanges.push({
-        from: lineOffset,
-        to: lineOffset + line.length,
-        content: line,
-      });
-
-      lineOffset += line.length + 1;
-    }
-
-    const currentLineIdx = lineRanges.findIndex(
-      (line) => this.cursor >= line.from && this.cursor <= line.to,
-    );
-
-    return { currentLineIdx, lines: lineRanges };
-  }
-
-  private countTabs(str: string) {
-    return str.split(/[^\t]/)[0].length;
-  }
-
-  private replaceSelection(snippet: string) {
-    const before = this._val.slice(0, this.selStart);
-    const after = this._val.slice(this.selEnd);
-    this._val = before + snippet + after;
-
-    // Move caret to end of inserted snippet
-    const caret = (before + snippet).length;
-    setTimeout(() => {
-      this.editorRef.nativeElement.focus();
-      this.editorRef.nativeElement.setSelectionRange(caret, caret);
-      this.cacheSelection(this.editorRef.nativeElement);
-    });
-  }
-
-  private updatePreview() {
-    const rawHtml = marked.parse(this._val);
-    const clean = DOMPurify.sanitize(rawHtml.toString(), { USE_PROFILES: { html: true } });
-    this.preview = this.sanitizer.bypassSecurityTrustHtml(clean);
   }
 
   /**
@@ -351,7 +303,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isLink() {
-    return /^\[.*\]\(.*\)/.test(this.selection);
+    return /^\[.*]\(.*\)/.test(this.selection);
   }
 
   applyLink() {
@@ -359,7 +311,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isImage() {
-    return /^!\[.*\]\(.*\)/.test(this.selection);
+    return /^!\[.*]\(.*\)/.test(this.selection);
   }
 
   applyImage() {
@@ -379,7 +331,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isCodeBlock() {
-    return /\`{3}\w*\n.*\n\`{3}/.test(this.selection);
+    return /`{3}\w*\n.*\n`{3}/.test(this.selection);
   }
 
   toggleCodeBlock() {
@@ -387,7 +339,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isInlineCode() {
-    return /\`[^\`]+\`/.test(this.selection);
+    return /`[^`]+`/.test(this.selection);
   }
 
   toggleInlineCode() {
@@ -422,5 +374,54 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
         this.editorRef.nativeElement.focus();
       });
     }
+  }
+
+  private wrap(before: string, after = before, space: boolean = false) {
+    if (space) {
+      return `${before} ${this.selection}${after}`;
+    }
+
+    return `${before}${this.selection}${after}`;
+  }
+
+  private unwrap(before: string, after = before) {
+    const selection = this.selection;
+    let from = before.length;
+
+    // Remove trailing space
+    if (selection.at(from) === ' ') {
+      from++;
+    }
+
+    return selection.slice(from, selection.length - after.length);
+  }
+
+  private insert(snippet: string) {
+    const event = new CustomEvent('insertSnippet', { detail: snippet });
+    window.dispatchEvent(event);
+  }
+
+  private countTabs(str: string) {
+    return str.split(/[^\t]/)[0].length;
+  }
+
+  private replaceSelection(snippet: string) {
+    const before = this._val.slice(0, this.selStart);
+    const after = this._val.slice(this.selEnd);
+    this._val = before + snippet + after;
+
+    // Move caret to end of inserted snippet
+    const caret = (before + snippet).length;
+    setTimeout(() => {
+      this.editorRef.nativeElement.focus();
+      this.editorRef.nativeElement.setSelectionRange(caret, caret);
+      this.cacheSelection(this.editorRef.nativeElement);
+    });
+  }
+
+  private updatePreview() {
+    const rawHtml = marked.parse(this._val);
+    const clean = DOMPurify.sanitize(rawHtml.toString(), { USE_PROFILES: { html: true } });
+    this.preview = this.sanitizer.bypassSecurityTrustHtml(clean);
   }
 }
