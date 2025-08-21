@@ -190,17 +190,17 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
    *
    */
 
-  isHeadline(size: number): boolean {
+  isHeading(size: number): boolean {
     const regex = new RegExp(`^#{${size}}(?!#)`);
     return regex.test(this.selection);
   }
 
-  toggleHeadline(size: number) {
+  toggleHeading(size: number) {
     const selection = this.selection;
 
     if (selection.startsWith('#')) {
       for (let i = 1; i <= 6; i++) {
-        if (this.isHeadline(i)) {
+        if (this.isHeading(i)) {
           this.insert(this.unwrap('#'.repeat(i), ''));
         }
       }
