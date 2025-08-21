@@ -1,0 +1,31 @@
+{
+  "name": "markular",
+  "version": "0.0.1",
+  "description": "A lightweight Markdown editor for Angular.",
+  "author": {
+    "name": "Lars Wächter",
+    "url": "https://larswaechter.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/larswaechter/markular"
+  },
+  "bugs": {
+    "url": "https://github.com/larswaechter/markular/issues"
+  },
+  "peerDependencies": {
+    "@angular/common": "^20.2.0",
+    "@angular/core": "^20.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "dompurify": "^3.2.6",
+    "marked": "^16.2.0"
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/dompurify": "^3.0.5"
+  },
+  "license": "MIT",
+  "keywords": ["angular", "markdown", "editor"]
+}

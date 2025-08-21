@@ -1,0 +1,104 @@
+// Light theme variables
+$bg: #f8fafc; // very light gray background
+$panel: #ffffff; // white panels
+$border: #e2e8f0; // soft gray borders
+$text: #1e293b; // dark slate text
+$muted: #64748b; // muted gray text
+$accent: #3b82f6; // blue accent
+
+:root {
+  --bg: #{$bg};
+  --panel: #{$panel};
+  --border: #{$border};
+  --text: #{$text};
+  --muted: #{$muted};
+  --accent: #{$accent};
+}
+
+.wrap {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+
+  .panel {
+    background: $panel;
+    border: 1px solid $border;
+    border-radius: 8px 8px 0px 0px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-bottom: 1px solid $border;
+      background: #f1f5f9;
+      flex-wrap: wrap;
+
+      .separator {
+        background-color: black;
+        width: 2px;
+        height: 16px;
+        margin: 0 8px;
+        border-radius: 4px;
+      }
+
+      button {
+        background: transparent;
+        border: 1px solid $border;
+        color: $text;
+        border-radius: 10px;
+        padding: 6px 10px;
+        cursor: pointer;
+        height: 36px;
+        width: 42px;
+
+        svg {
+          height: 18px;
+          width: 18px;
+        }
+
+        &.active {
+          background-color: rgba($accent, 0.2);
+        }
+
+        &:hover {
+          border-color: $accent;
+          background: rgba($accent, 0.05);
+        }
+
+        &.previewBtn {
+          margin-left: auto;
+        }
+      }
+    }
+
+    .preview {
+      padding: 0px 8px;
+      min-height: 64px;
+    }
+
+    textarea {
+      flex: 1;
+      background: transparent;
+      color: $text;
+      padding: 12px;
+      border: 0;
+      outline: none;
+      resize: none;
+      font:
+        14px/1.5 ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        monospace;
+      tab-size: 2;
+
+      &::placeholder {
+        color: $muted;
+      }
+    }
+  }
+}
