@@ -20,11 +20,13 @@ export interface ToolbarOptions {
   horizontalRule?: boolean;
   hyperlink?: boolean;
   image?: boolean;
+  redo?: boolean;
+  undo?: boolean;
 }
 
 export const DefaultOptions: Options = {
   toolbar: {
-    headings: [1, 2, 3, 4, 5, 6],
+    headings: [1, 2, 3],
     emphasis: {
       bold: true,
       italic: true,
@@ -41,5 +43,7 @@ export const DefaultOptions: Options = {
     horizontalRule: true,
     hyperlink: true,
     image: true,
+    redo: true,
+    undo: true,
   },
 };

@@ -1,5 +1,4 @@
 // Light theme variables
-$bg: #f8fafc; // very light gray background
 $panel: #ffffff; // white panels
 $border: #d6dbe3; // soft gray borders
 $text: #1e293b; // dark slate text
@@ -7,7 +6,6 @@ $muted: #64748b; // muted gray text
 $accent: #3b82f6; // blue accent
 
 :root {
-  --bg: #{$bg};
   --panel: #{$panel};
   --border: #{$border};
   --text: #{$text};
@@ -67,9 +65,18 @@ $accent: #3b82f6; // blue accent
         background-color: rgba($accent, 0.2);
       }
 
-      &:hover {
+      &:hover:not(:disabled) {
         border-color: $accent;
         background: rgba($accent, 0.05);
+      }
+
+      &:hover:disabled {
+        cursor: default;
+      }
+
+
+      &:disabled {
+        background-color: rgba(#e1dfdf, .6);
       }
 
     }

@@ -9,7 +9,7 @@ import {
   input,
   InputSignal,
   output,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -39,14 +39,19 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   onChange = output<string>();
 
+  history: string[] = [];
+  historyIndex = 0;
+
   preview!: SafeHtml;
   showPreview = false;
   isFocused = false;
   isDisabled = false;
+
   _val = '';
   _options = computed<Options>(() =>
     this.options() !== undefined ? (this.options() as Options) : DefaultOptions,
   );
+
   @ViewChild('editor') editorRef!: ElementRef<HTMLTextAreaElement>;
   private readonly elementRef = inject(ElementRef<HTMLInputElement>);
   private readonly sanitizer = inject(DomSanitizer);
@@ -62,9 +67,11 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   set value(value: string) {
+    console.log('set value', value);
     this._val = value;
     this._onChange(value);
     this._onTouched();
+    console.log(this.history);
   }
 
   private get selection(): string {
@@ -98,8 +105,11 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   _onTouched = () => {};
 
   writeValue(value: string) {
-    this.value = value;
-    // this._elementRef.nativeElement.querySelector('textarea').value = value;
+    console.log('write value', value);
+    this._val = value;
+    this.appendHistory();
+    this.historyIndex--;
+    // this.elementRef.nativeElement.querySelector('textarea').value = value;
   }
 
   registerOnChange(onChange: any) {
@@ -126,29 +136,44 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
       this.togglePreview();
+
+      // Undo // Redo
+    } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+      event.preventDefault();
+      if (event.shiftKey) {
+        this.redo();
+      } else {
+        this.undo();
+      }
+
+      // Tab
     } else if (event.key === 'Tab' && this.isFocused) {
       event.preventDefault();
+
+      // Remove tab (4 spaces)
       if (event.shiftKey) {
         if (this.selStart === this.cursor) {
           this.insert(
             this.selection
               .split('\n')
-              .map((line) => line.replace(/^\t/, ''))
+              .map((line) => line.replace(/^\s{4}/, ''))
               .join('\n'),
           );
         }
+
+        // Add tab (4 spaces)
       } else {
         if (this.selStart === this.cursor) {
           this.insert(
             this.selection
               .split('\n')
-              .map((line) => '\t' + line)
+              .map((line) => ' '.repeat(4) + line)
               .join('\n'),
           );
         } else {
           this.selStart = this.cursor;
           this.selEnd = this.cursor;
-          this.insert('\t');
+          this.insert(' '.repeat(4));
         }
       }
 
@@ -158,9 +183,8 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   onInput(ta: HTMLTextAreaElement) {
-    this._val = ta.value;
-    this._onChange(this._val);
-    this.onChange?.emit(this._val);
+    this.value = ta.value;
+    this.appendHistory();
   }
 
   toggleFocused() {
@@ -376,6 +400,31 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     }
   }
 
+  undo() {
+    console.log(this.history, this.historyIndex);
+    if (this.canUndo()) {
+      this.historyIndex--;
+      this.value = this.history[this.historyIndex];
+      this.editorRef.nativeElement.focus();
+    }
+  }
+
+  redo() {
+    if (this.canRedo()) {
+      this.historyIndex++;
+      this.value = this.history[this.historyIndex];
+      this.editorRef.nativeElement.focus();
+    }
+  }
+
+  canUndo(): boolean {
+    return this.historyIndex > 0;
+  }
+
+  canRedo(): boolean {
+    return this.historyIndex < this.history.length - 1;
+  }
+
   private wrap(before: string, after = before, space: boolean = false) {
     if (space) {
       return `${before} ${this.selection}${after}`;
@@ -408,7 +457,9 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   private replaceSelection(snippet: string) {
     const before = this._val.slice(0, this.selStart);
     const after = this._val.slice(this.selEnd);
-    this._val = before + snippet + after;
+
+    this.value = before + snippet + after;
+    this.appendHistory();
 
     // Move caret to end of inserted snippet
     const caret = (before + snippet).length;
@@ -423,5 +474,13 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     const rawHtml = marked.parse(this._val);
     const clean = DOMPurify.sanitize(rawHtml.toString(), { USE_PROFILES: { html: true } });
     this.preview = this.sanitizer.bypassSecurityTrustHtml(clean);
+  }
+
+  private appendHistory() {
+    if (this._val !== this.history[this.historyIndex]) {
+      this.history = this.history.slice(0, this.historyIndex + 1);
+      this.history.push(this._val ?? '');
+      this.historyIndex++;
+    }
   }
 }
