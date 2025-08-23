@@ -22,6 +22,7 @@ export interface ToolbarOptions {
   image?: boolean;
   redo?: boolean;
   undo?: boolean;
+  download?: boolean;
 }
 
 export const DefaultOptions: Options = {

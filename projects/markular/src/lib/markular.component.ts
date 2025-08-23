@@ -371,7 +371,14 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleCodeBlock() {
-    this.insert('```ts\n' + (this.selection || '') + '\n```');
+    if (!this.isCodeBlock()) {
+      this.insert('```ts\n' + (this.selection || '') + '\n```');
+    } else {
+      const match = this.selection.match(/`{3}\w*\n(.*)\n`{3}/);
+      if (match?.length === 2) {
+        this.insert(match[1]);
+      }
+    }
   }
 
   isInlineCode() {
@@ -379,6 +386,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleInlineCode() {
+    this.setSelectionToCursor();
     if (this.isInlineCode()) {
       this.insert(this.selection.replaceAll('`', ''));
     } else {
@@ -395,20 +403,6 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
       this.insert('');
     } else {
       this.insert(this.wrap('\n---', '\n\n'));
-    }
-  }
-
-  togglePreview() {
-    if (!this.showPreview) {
-      this.updatePreview();
-    }
-
-    this.showPreview = !this.showPreview;
-
-    if (!this.showPreview) {
-      setTimeout(() => {
-        this.editorRef.nativeElement.focus();
-      });
     }
   }
 
@@ -435,6 +429,30 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   canRedo(): boolean {
     return this.historyIndex < this.history.length - 1;
+  }
+
+  download() {
+    const blob = new Blob([this._val], { type: 'text/markdown' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'document.md';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  togglePreview() {
+    if (!this.showPreview) {
+      this.updatePreview();
+    }
+
+    this.showPreview = !this.showPreview;
+
+    if (!this.showPreview) {
+      setTimeout(() => {
+        this.editorRef.nativeElement.focus();
+      });
+    }
   }
 
   private wrap(before: string, after = before, space: boolean = false) {
@@ -484,6 +502,11 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
       this.editorRef.nativeElement.setSelectionRange(caret, caret);
       this.cacheSelection(this.editorRef.nativeElement);
     });
+  }
+
+  private setSelectionToCursor() {
+    this.selStart = this.cursor;
+    this.selEnd = this.cursor;
   }
 
   private updatePreview() {

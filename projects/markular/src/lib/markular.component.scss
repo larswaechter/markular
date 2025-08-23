@@ -38,14 +38,6 @@ $accent: #3b82f6; // blue accent
       gap: 8px;
     }
 
-    .separator {
-      background-color: black;
-      width: 2px;
-      height: 16px;
-      margin: 0 8px;
-      border-radius: 4px;
-    }
-
     button {
       background: transparent;
       border: 1px solid $border;
@@ -74,11 +66,9 @@ $accent: #3b82f6; // blue accent
         cursor: default;
       }
 
-
       &:disabled {
         background-color: rgba(#e1dfdf, .6);
       }
-
     }
   }
 
