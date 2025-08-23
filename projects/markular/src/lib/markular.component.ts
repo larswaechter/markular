@@ -133,6 +133,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // Preview
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
       this.togglePreview();
@@ -145,6 +146,16 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
       } else {
         this.undo();
       }
+
+      // Bold
+    } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+      event.preventDefault();
+      this.toggleBold();
+
+      // Italic
+    } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'i') {
+      event.preventDefault();
+      this.toggleItalic();
 
       // Tab
     } else if (event.key === 'Tab' && this.isFocused) {
@@ -220,13 +231,14 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleHeading(size: number) {
-    const selection = this.selection;
-
-    if (selection.startsWith('#')) {
-      for (let i = 1; i <= 6; i++) {
-        if (this.isHeading(i)) {
-          this.insert(this.unwrap('#'.repeat(i), ''));
-        }
+    if (this.selection.startsWith('#')) {
+      const currentSize = this.countHashes(this.selection);
+      if (currentSize === size) {
+        this.insert(this.unwrap('#'.repeat(size), ''));
+      } else if (size > currentSize) {
+        this.insert(this.wrap('#'.repeat(size - currentSize), '', false));
+      } else {
+        this.insert(this.unwrap('#'.repeat(currentSize - size), ''));
       }
     } else {
       this.insert(this.wrap('#'.repeat(size), '', true));
@@ -452,6 +464,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   private countTabs(str: string) {
     return str.split(/[^\t]/)[0].length;
+  }
+
+  private countHashes(str: string) {
+    return str.split(/[^#]/)[0].length;
   }
 
   private replaceSelection(snippet: string) {
