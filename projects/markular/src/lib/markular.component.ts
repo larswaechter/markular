@@ -9,7 +9,7 @@ import {
   input,
   InputSignal,
   output,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -342,16 +342,30 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     return /^\[.*]\(.*\)/.test(this.selection);
   }
 
-  applyLink() {
-    this.insert(`[${this.selection}](https://)`);
+  toggleLink() {
+    if (!this.isLink()) {
+      this.insert(`[${this.selection}](https://)`);
+    } else {
+      const match = this.selection.match(/^\[(.*)]\(.*\)/);
+      if (match?.length === 2) {
+        this.insert(match[1]);
+      }
+    }
   }
 
   isImage() {
     return /^!\[.*]\(.*\)/.test(this.selection);
   }
 
-  applyImage() {
-    this.insert(`![${this.selection}](https://)`);
+  toggleImage() {
+    if (!this.isImage()) {
+      this.insert(`![${this.selection}](https://)`);
+    } else {
+      const match = this.selection.match(/^!\[(.*)]\(.*\)/);
+      if (match?.length === 2) {
+        this.insert(match[1]);
+      }
+    }
   }
 
   isQuote() {

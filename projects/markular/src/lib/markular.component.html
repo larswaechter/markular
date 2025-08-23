@@ -161,7 +161,7 @@
         }
 
         @if (_options().toolbar.hyperlink) {
-          <button title="Hyperlink" [class.active]="isFocused && isLink()" (click)="applyLink()">
+          <button title="Hyperlink" [class.active]="isFocused && isLink()" (click)="toggleLink()">
             <svg
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
@@ -180,7 +180,7 @@
         }
 
         @if (_options().toolbar.image) {
-          <button title="Image" [class.active]="isFocused && isImage()" (click)="applyImage()">
+          <button title="Image" [class.active]="isFocused && isImage()" (click)="toggleImage()">
             <svg
               class="w-6 h-6 text-gray-800 dark:text-white"
               aria-hidden="true"
