@@ -21,6 +21,9 @@ jobs:
       - run: npx ng build markular
       - run: npx ng build --project demo --configuration production --base-href "/markular/"
 
+      - run: ls dist/demo
+      - run: ls dist/demo/browser
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
