@@ -21,6 +21,8 @@ jobs:
 
       - run: npm ci
 
+      - run: ng test markular --browsers=ChromeHeadless --no-watch
+
       - run: npx ng build markular
       - run: npx ng build --project demo --configuration production --base-href "/markular/"
 
