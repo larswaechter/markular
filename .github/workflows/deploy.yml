@@ -18,7 +18,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run build --project demo --configuration production --base-href "https://larswaechter.github.io/markular/"
+      - run: ng build --project demo --configuration production --base-href "https://larswaechter.github.io/markular/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
