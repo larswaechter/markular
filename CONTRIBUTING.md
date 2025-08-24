@@ -27,6 +27,6 @@ Feel free to contribute to markular:
 ## Publishing to GH Pages
 
 ```shell
-ng build demo --configuration production --base-href "https://larswaechter.github.io/markular/"
+ng build demo --configuration production --base-href "/markular/"
 npx angular-cli-ghpages --dir=dist/demo/browser                                                
 ```
