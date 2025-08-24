@@ -61,6 +61,14 @@ and use it in your template:
 
 See the [demo app](https://github.com/larswaechter/markular/tree/main/projects/demo/src/app) for a more detailed example.
 
+### API
+
+| Name        | Description           | Type                                                                                                      | Default                                                                                                       |
+|-------------|-----------------------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| options     | Markular options      | [Options](https://github.com/larswaechter/markular/blob/main/projects/markular/src/lib/models/options.ts) | [Default](https://github.com/larswaechter/markular/blob/main/projects/markular/src/lib/models/options.ts#L28) |
+| placeholder | Editor placeholder    | string                                                                                                    | 'Enter markdown...'                                                                                           |
+| rows        | Editor number of rows | number                                                                                                    | 10                                                                                                            |
+
 ### Keyboard Shortcuts
 
 On MacOS use CMD button instead of Ctrl.

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { Markular, Options } from 'markular';
@@ -19,10 +19,9 @@ export class App {
       },
     },
   };
-  protected readonly title = signal('demo');
 
   constructor(private formBuilder: FormBuilder) {
-    this.form = formBuilder.group({
+    this.form = this.formBuilder.group({
       markdown: `# Simple Chocolate Cake
 
 - 200 g sugar
