@@ -2,10 +2,11 @@
   "name": "markular-workspace",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development"
+    "serve": "ng serve demo",
+    "build": "ng build markular --watch",
+    "test": "ng test markular --browsers=ChromeHeadless --no-watch",
+    "build:prod": "ng build demo --configuration production --base-href \"/markular/\"",
+    "deploy": "npx angular-cli-ghpages --dir=dist/demo/browser"
   },
   "prettier": {
     "printWidth": 100,

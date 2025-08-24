@@ -47,17 +47,19 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   isFocused = false;
   isDisabled = false;
 
+  selStart = 0;
+  selEnd = 0;
+
   _val = '';
   _options = computed<Options>(() =>
     this.options() !== undefined ? (this.options() as Options) : DefaultOptions,
   );
 
   @ViewChild('editor') editorRef!: ElementRef<HTMLTextAreaElement>;
+
   private readonly elementRef = inject(ElementRef<HTMLInputElement>);
   private readonly sanitizer = inject(DomSanitizer);
   private cursor = 0;
-  private selStart = 0;
-  private selEnd = 0;
 
   constructor() {
     marked.setOptions({
