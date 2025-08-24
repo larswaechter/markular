@@ -76,7 +76,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   private get selection(): string {
-    return this._val.slice(this.selStart, this.selEnd);
+    return this._val.slice(this.selStart, this.selEnd) || '';
   }
 
   private get lines() {
@@ -283,19 +283,19 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleUnorderedList() {
     if (this.isUnorderedList()) {
-      const lines = (this.selection || '')
+      const lines = this.selection
         .split('\n')
-        .map((line) => (line ? line.replace(/^\t*-\s?/g, '') : ''));
+        .map((line) => (line ? line.replace(/^\s*-\s?/g, '') : ''));
       this.insert(lines.join('\n'));
     } else {
       if (this.isOrderedList()) {
-        const lines = (this.selection || '').split('\n').map((line) => {
+        const lines = this.selection.split('\n').map((line) => {
           const tabs = this.countTabs(line);
-          return line.replace(/^\t*\d+\./, '\t'.repeat(tabs) + '-');
+          return line.replace(/^\s*\d+\./, ' '.repeat(4 * tabs) + '-');
         });
         this.insert(lines.join('\n'));
       } else {
-        const lines = (this.selection || '').split('\n').map((line) => (line ? `- ${line}` : '- '));
+        const lines = this.selection.split('\n').map((line) => (line ? `- ${line}` : '- '));
         this.insert(lines.join('\n'));
       }
     }
@@ -307,33 +307,33 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleOrderedList() {
     if (this.isOrderedList()) {
-      const lines = (this.selection || '')
+      const lines = this.selection
         .split('\n')
-        .map((line) => (line ? line.replace(/^\t*\d+\.\s?/g, '') : ''));
+        .map((line) => (line ? line.replace(/^\s*\d+\.\s?/g, '') : ''));
       this.insert(lines.join('\n'));
     } else {
       if (this.isUnorderedList()) {
         const lineLevels = new Map();
         const levelCounter = new Map();
 
-        (this.selection || '').split('\n').forEach((line, i) => {
+        this.selection.split('\n').forEach((line, i) => {
           lineLevels.set(i, this.countTabs(line));
         });
 
-        const lines = (this.selection || '').split('\n').map((line, i) => {
-          line = line.replace(/^\t*-\s?/, '');
+        const lines = this.selection.split('\n').map((line, i) => {
+          line = line.replace(/^\s*-\s?/, '');
 
           const tabs = lineLevels.get(i);
           const n = (levelCounter.get(tabs) || 0) + 1;
 
           levelCounter.set(tabs, n);
 
-          return '\t'.repeat(tabs) + `${n}. ${line}`;
+          return ' '.repeat(4 * tabs) + `${n}. ${line}`;
         });
 
         this.insert(lines.join('\n'));
       } else {
-        const lines = (this.selection || '').split('\n').map((line, i) => `${i + 1}. ${line}`);
+        const lines = this.selection.split('\n').map((line, i) => `${i + 1}. ${line}`);
         this.insert(lines.join('\n'));
       }
     }
@@ -387,7 +387,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleCodeBlock() {
     if (!this.isCodeBlock()) {
-      this.insert('```ts\n' + (this.selection || '') + '\n```');
+      this.insert('```ts\n' + this.selection + '\n```');
     } else {
       const match = this.selection.match(/`{3}\w*\n(.*)\n`{3}/);
       if (match?.length === 2) {
@@ -495,7 +495,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   private countTabs(str: string) {
-    return str.split(/[^\t]/)[0].length;
+    return str.split(/\S/)[0].length / 4;
   }
 
   private countHashes(str: string) {

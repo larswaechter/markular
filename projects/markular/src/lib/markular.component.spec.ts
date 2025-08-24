@@ -174,12 +174,28 @@ describe('Markular', () => {
       expect(component._val).toBe('Hello\nWorld');
     });
 
+    it('should remove ul nested multiline', () => {
+      component._val = '- abc\n    - def\n    - ghi\n- jkl';
+      component.selStart = 0;
+      component.selEnd = 31;
+      component.toggleUnorderedList();
+      expect(component._val).toBe('abc\ndef\nghi\njkl');
+    });
+
     it('should convert ul => ol multiline', () => {
       component._val = '- Hello\n- World';
       component.selStart = 0;
       component.selEnd = 11;
       component.toggleOrderedList();
       expect(component._val).toBe('1. Hello\n2. World');
+    });
+
+    it('should convert ul => ol nested multiline', () => {
+      component._val = '- abc\n    - def\n    - ghi\n- jkl';
+      component.selStart = 0;
+      component.selEnd = 31;
+      component.toggleOrderedList();
+      expect(component._val).toBe('1. abc\n    1. def\n    2. ghi\n2. jkl');
     });
   });
 
@@ -230,12 +246,28 @@ describe('Markular', () => {
       expect(component._val).toBe('Hello\nWorld');
     });
 
+    it('should remove ol nested multiline', () => {
+      component._val = '1. abc\n    1. def\n    2. ghi\n2. jkl';
+      component.selStart = 0;
+      component.selEnd = 35;
+      component.toggleOrderedList();
+      expect(component._val).toBe('abc\ndef\nghi\njkl');
+    });
+
     it('should convert ol => ul multiline', () => {
       component._val = '1. Hello\n2. World';
       component.selStart = 0;
       component.selEnd = 13;
       component.toggleUnorderedList();
       expect(component._val).toBe('- Hello\n- World');
+    });
+
+    it('should convert ol => ul nested multiline', () => {
+      component._val = '1. abc\n    1. def\n    2. ghi\n2. jkl';
+      component.selStart = 0;
+      component.selEnd = 35;
+      component.toggleUnorderedList();
+      expect(component._val).toBe('- abc\n    - def\n    - ghi\n- jkl');
     });
   });
 

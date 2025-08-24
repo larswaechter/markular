@@ -73,12 +73,13 @@ See the [demo app](https://github.com/larswaechter/markular/tree/main/projects/d
 
 On MacOS use CMD button instead of Ctrl.
 
-| Shortcut | Action |
-|----------|--------|
-| Ctrl + b | Bold   |
-| Ctrl + i | Italic |
-| Ctrl + z | Undo   |
-| Ctrl + y | Redo   |
+| Shortcut | Action                  |
+|----------|-------------------------|
+| Ctrl + b | Bold                    |
+| Ctrl + i | Italic                  |
+| Ctrl + z | Undo                    |
+| Ctrl + y | Redo                    |
+| Ctrl + k | Toggle editor / preview |
 
 ## 👋 Shoutouts
 
