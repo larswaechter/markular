@@ -1,15 +1,32 @@
-<div>
-  <h1>Markular Demo</h1>
-  <p>A lightweight Markdown Editor for Angular.</p>
-  <div class="container">
+<div class="container">
+  <header>
+    <h1>Markular</h1>
+    <p>A fast to setup and easy to use open source Markdown editor for Angular</p>
+  </header>
+
+  <main>
     <form [formGroup]="form">
       <markular
         (onChange)="handleChange($event)"
         formControlName="markdown"
       ></markular>
     </form>
-  </div>
+  </main>
 
-  <a href="https://github.com/larswaechter/markular">Leave a ⭐ on GitHub</a>
-
+  <footer>
+    <p>
+      Made with ❤️ by Lars Wächter
+    </p>
+    <p class="links">
+      <a href="https://github.com/larswaechter/markular" rel="noopener noreferrer" target="_blank">
+        GitHub
+      </a> |
+      <a href="https://www.npmjs.com/package/markular" rel="noopener noreferrer" target="_blank">
+        NPM
+      </a> |
+      <a href="https://larswaechter.dev" rel="noopener noreferrer" target="_blank">
+        Website
+      </a>
+    </p>
+  </footer>
 </div>

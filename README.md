@@ -22,6 +22,8 @@ Key features are:
 
 Internally, it uses [marked](https://www.npmjs.com/package/marked) for parsing Markdown and [dompurify](https://www.npmjs.com/package/dompurify) for sanitizing the output HTML.
 
+### [Demo](https://larswaechter.github.io/markular/)
+
 ## 📦 Installation
 
 Install via npm:
@@ -31,6 +33,8 @@ npm i --save markular
 ```
 
 ## 🔨 Usage
+
+### Setup
 
 Import the according component:
 
@@ -42,6 +46,7 @@ import { Markular } from 'markular';
   // ...
 })
 export class MyApp {
+  markdown = '# Hello World!'
 }
 ```
 
@@ -53,6 +58,17 @@ and use it in your template:
 ```
 
 See the [demo app](https://github.com/larswaechter/markular/tree/main/projects/demo/src/app) for a more detailed example.
+
+### Keyboard Shortcuts
+
+On MacOS use CMD button instead of Ctrl.
+
+| Shortcut | Action |
+|----------|--------|
+| Ctrl + b | Bold   |
+| Ctrl + i | Italic |
+| Ctrl + z | Undo   |
+| Ctrl + y | Redo   |
 
 ## 👋 Shoutouts
 

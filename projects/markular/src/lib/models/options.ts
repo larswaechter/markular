@@ -46,5 +46,6 @@ export const DefaultOptions: Options = {
     image: true,
     redo: true,
     undo: true,
+    download: true,
   },
 };
