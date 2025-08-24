@@ -1,6 +1,6 @@
 <div class="wrapper">
   <div class="toolbar">
-    <div class="actions">
+    <div class="left">
       @if (!showPreview) {
         @for (headline of _options().toolbar.headings; track $index) {
           <button
@@ -224,7 +224,7 @@
       }
     </div>
 
-    <div class="actions">
+    <div class="right">
       @if (_options().toolbar.download) {
         <button (click)="download()" [disabled]="!_val.length" title="Download">
           <svg aria-hidden="true" fill="none"
