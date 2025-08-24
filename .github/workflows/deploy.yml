@@ -21,6 +21,7 @@ jobs:
       - run: npx ng build markular
       - run: npx ng build --project demo --configuration production --base-href "/markular/"
 
+      - run: echo $PWD
       - run: ls dist/demo
       - run: ls dist/demo/browser
 
