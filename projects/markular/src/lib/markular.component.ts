@@ -9,7 +9,7 @@ import {
   input,
   InputSignal,
   output,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -77,6 +77,28 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   private get selection(): string {
     return this._val.slice(this.selStart, this.selEnd) || '';
+  }
+
+  private get currentLine(): string {
+    const lines = this.lines;
+    if (lines.currentLineIdx >= 0) {
+      return (
+        this._val.slice(
+          lines.lines[lines.currentLineIdx].from,
+          lines.lines[lines.currentLineIdx].to,
+        ) || ''
+      );
+    }
+
+    return '';
+  }
+
+  private get selectionOrCurrentLine(): string {
+    if (this.isNoneSelected()) {
+      return this.currentLine;
+    }
+
+    return this.selection;
   }
 
   private get lines() {
@@ -221,7 +243,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   isHeading(size: number): boolean {
     const regex = new RegExp(`^#{${size}}(?!#)`);
-    return regex.test(this.selection);
+    return regex.test(this.selectionOrCurrentLine);
   }
 
   toggleHeading(size: number) {
@@ -268,7 +290,9 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isUnorderedList(): boolean {
-    return this.selection.split('\n').every((line) => /^-(?!-)/.test(line.trimStart()));
+    return this.selectionOrCurrentLine
+      .split('\n')
+      .every((line) => /^-(?!-)/.test(line.trimStart()));
   }
 
   toggleUnorderedList() {
@@ -296,7 +320,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isOrderedList(): boolean {
-    return this.selection.split('\n').every((line) => /^\d+\./.test(line.trimStart()));
+    return this.selectionOrCurrentLine.split('\n').every((line) => /^\d+\./.test(line.trimStart()));
   }
 
   toggleOrderedList() {

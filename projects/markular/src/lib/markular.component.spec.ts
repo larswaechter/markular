@@ -38,11 +38,41 @@ describe('Markular', () => {
       expect(component._val).toBe('# Hello');
     });
 
+    it('should insert H1 when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleHeading(1);
+      expect(component._val).toBe('He# llo');
+    });
+
+    it('should insert H1 when none selected', () => {
+      component._val = 'Hello';
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleHeading(1);
+      expect(component._val).toBe('# Hello');
+    });
+
     it('should be H1', () => {
       component._val = '# Hello';
       component.selStart = 0;
       component.selEnd = 7;
       expect(component.isHeading(1)).toBeTruthy();
+    });
+
+    it('should be H1 when none selected', () => {
+      component._val = '# Hello';
+      component.selStart = 5;
+      component.selEnd = 5;
+      expect(component.isHeading(1)).toBeTruthy();
+    });
+
+    it('should not be H1 when subselect', () => {
+      component._val = '# Hello';
+      component.selStart = 3;
+      component.selEnd = 5;
+      expect(component.isHeading(1)).toBeFalsy();
     });
 
     it('should remove H1', () => {
@@ -136,6 +166,22 @@ describe('Markular', () => {
       expect(component._val).toBe('- Hello');
     });
 
+    it('should insert ul when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleUnorderedList();
+      expect(component._val).toBe('He- llo');
+    });
+
+    it('should insert ul when none selected', () => {
+      component._val = 'Hello';
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleUnorderedList();
+      expect(component._val).toBe('- Hello');
+    });
+
     it('should insert ul multiline', () => {
       component._val = 'Hello\nWorld';
       component.selStart = 0;
@@ -151,11 +197,25 @@ describe('Markular', () => {
       expect(component.isUnorderedList()).toBeTruthy();
     });
 
+    it('should be ul none selected', () => {
+      component._val = '- Hello';
+      component.selStart = 6;
+      component.selEnd = 6;
+      expect(component.isUnorderedList()).toBeTruthy();
+    });
+
     it('should be ul multiline', () => {
       component._val = '- Hello\n- World';
       component.selStart = 0;
       component.selEnd = 11;
       expect(component.isUnorderedList()).toBeTruthy();
+    });
+
+    it('should not be ul when subselect', () => {
+      component._val = '- Hello';
+      component.selStart = 4;
+      component.selEnd = 6;
+      expect(component.isUnorderedList()).toBeFalsy();
     });
 
     it('should remove ul', () => {
@@ -208,6 +268,22 @@ describe('Markular', () => {
       expect(component._val).toBe('1. Hello');
     });
 
+    it('should insert ol when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleOrderedList();
+      expect(component._val).toBe('He1. llo');
+    });
+
+    it('should insert ol when none selected', () => {
+      component._val = 'Hello';
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleOrderedList();
+      expect(component._val).toBe('1. Hello');
+    });
+
     it('should insert ol multiline', () => {
       component._val = 'Hello\nWorld';
       component.selStart = 0;
@@ -223,11 +299,25 @@ describe('Markular', () => {
       expect(component.isOrderedList()).toBeTruthy();
     });
 
+    it('should be ol none selected', () => {
+      component._val = '1. Hello';
+      component.selStart = 6;
+      component.selEnd = 6;
+      expect(component.isOrderedList()).toBeTruthy();
+    });
+
     it('should be ol multiline', () => {
       component._val = '1. Hello\n2. World';
       component.selStart = 0;
       component.selEnd = 13;
       expect(component.isOrderedList()).toBeTruthy();
+    });
+
+    it('should not be ol when subselect', () => {
+      component._val = '1. Hello';
+      component.selStart = 4;
+      component.selEnd = 6;
+      expect(component.isOrderedList()).toBeFalsy();
     });
 
     it('should remove ol', () => {
