@@ -31,9 +31,4 @@ npm test
 5. Commit & push your changes
 6. Submit a pull request 🚀
 
-## Publishing to GH Pages
-
-```shell
-ng build demo --configuration production --base-href "/markular/"
-npx angular-cli-ghpages --dir=dist/demo/browser                                               
-```
+Thank you!

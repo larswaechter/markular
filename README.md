@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
-
+[![npm version](https://badge.fury.io/js/markular.svg)](//npmjs.com/package/markular)
 [![Test and Deploy](https://github.com/larswaechter/markular/actions/workflows/deploy.yml/badge.svg)](https://github.com/larswaechter/markular/actions)
 
 A lightweight Markdown Editor for Angular.
