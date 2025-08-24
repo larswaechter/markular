@@ -72,7 +72,7 @@ See the [demo app](https://github.com/larswaechter/markular/tree/main/projects/d
 
 ### Keyboard Shortcuts
 
-On MacOS use CMD button instead of Ctrl.
+On MacOS you can use CMD button instead of Ctrl.
 
 | Shortcut         | Action                  |
 |------------------|-------------------------|
@@ -80,7 +80,7 @@ On MacOS use CMD button instead of Ctrl.
 | Ctrl + i         | Italic                  |
 | Ctrl + z         | Undo                    |
 | Ctrl + Shift + z | Redo                    |
-| Ctrl + k         | Toggle editor / preview |
+| Ctrl + Enter     | Toggle editor / preview |
 
 ## 👋 Shoutouts
 
