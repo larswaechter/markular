@@ -19,7 +19,7 @@ jobs:
       - run: npm ci
 
       - run: npx ng build markular
-      - run: npx build --project demo --configuration production --base-href "/markular/"
+      - run: npx ng build --project demo --configuration production --base-href "/markular/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
