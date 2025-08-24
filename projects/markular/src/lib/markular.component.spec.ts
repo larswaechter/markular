@@ -313,4 +313,93 @@ describe('Markular', () => {
       expect(component._val).toBe('Hello');
     });
   });
+
+  describe('Horizontal divider tests', () => {
+    it('should insert divider', () => {
+      component._val = '';
+      component.selStart = 0;
+      component.selEnd = 0;
+      component.toggleDivider();
+      expect(component._val).toBe('\n---\n\n');
+    });
+
+    it('should be divider', () => {
+      component._val = '---';
+      component.selStart = 0;
+      component.selEnd = 3;
+      expect(component.isDivider()).toBeTruthy();
+    });
+
+    it('should remove divider', () => {
+      component._val = '---';
+      component.selStart = 0;
+      component.selEnd = 3;
+      component.toggleDivider();
+      expect(component._val).toBe('');
+    });
+  });
+
+  describe('Hyperlink tests', () => {
+    it('should insert link', () => {
+      component._val = 'Hello';
+      component.selStart = 0;
+      component.selEnd = 5;
+      component.toggleLink();
+      expect(component._val).toBe('[Hello](https://)');
+    });
+
+    it('should be link', () => {
+      component._val = '[Hello](https://)';
+      component.selStart = 0;
+      component.selEnd = 17;
+      expect(component.isLink()).toBeTruthy();
+    });
+
+    it('should not be image', () => {
+      component._val = '[Hello](https://)';
+      component.selStart = 0;
+      component.selEnd = 17;
+      expect(component.isImage()).toBeFalsy();
+    });
+
+    it('should remove link', () => {
+      component._val = '[Hello](https://)';
+      component.selStart = 0;
+      component.selEnd = 17;
+      component.toggleLink();
+      expect(component._val).toBe('Hello');
+    });
+  });
+
+  describe('Image tests', () => {
+    it('should insert image', () => {
+      component._val = 'Hello';
+      component.selStart = 0;
+      component.selEnd = 5;
+      component.toggleImage();
+      expect(component._val).toBe('![Hello](https://)');
+    });
+
+    it('should be image', () => {
+      component._val = '![Hello](https://)';
+      component.selStart = 0;
+      component.selEnd = 18;
+      expect(component.isImage()).toBeTruthy();
+    });
+
+    it('should not be link', () => {
+      component._val = '![Hello](https://)';
+      component.selStart = 0;
+      component.selEnd = 18;
+      expect(component.isLink()).toBeFalsy();
+    });
+
+    it('should remove image', () => {
+      component._val = '![Hello](https://)';
+      component.selStart = 0;
+      component.selEnd = 18;
+      component.toggleImage();
+      expect(component._val).toBe('Hello');
+    });
+  });
 });

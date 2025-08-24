@@ -27,7 +27,7 @@ npm test
 1. Create a fork
 2. Create a new branch from `release` (or `main` if not existing)
 3. Make your changes
-4. Run tests
+4. Add new tests if appropriated & run all tests
 5. Commit & push your changes
 6. Submit a pull request 🚀
 
