@@ -18,10 +18,10 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run build -- --configuration production --base-href /markular/ --project demo
+      - run: npm run build --project demo --configuration production --base-href "https://larswaechter.github.io/markular/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/demo
+          publish_dir: ./dist/demo/browser
