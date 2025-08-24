@@ -42,9 +42,10 @@ Import the according component:
 
 ```ts
 import { Markular } from 'markular';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  imports: [Markular]
+  imports: [Markular, FormsModule]
   // ...
 })
 export class MyApp {

@@ -9,7 +9,7 @@ import {
   input,
   InputSignal,
   output,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -107,7 +107,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   writeValue(value: string) {
     // console.log('write value', value);
-    this._val = value;
+    this._val = value || '';
     this.appendHistory();
     this.historyIndex--;
     // this.elementRef.nativeElement.querySelector('textarea').value = value;
