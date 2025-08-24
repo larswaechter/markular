@@ -69,11 +69,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   set value(value: string) {
-    console.log('set value', value);
+    // console.log('set value', value);
     this._val = value;
     this._onChange(value);
     this._onTouched();
-    console.log(this.history);
   }
 
   private get selection(): string {
@@ -107,7 +106,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   _onTouched = () => {};
 
   writeValue(value: string) {
-    console.log('write value', value);
+    // console.log('write value', value);
     this._val = value;
     this.appendHistory();
     this.historyIndex--;
@@ -218,7 +217,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
       }
     }
 
-    console.log('cacheSelection', this.selStart, this.selEnd, this.cursor);
+    // console.log('cacheSelection', this.selStart, this.selEnd, this.cursor);
   }
 
   /**
@@ -402,7 +401,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleInlineCode() {
-    this.setSelectionToCursor();
+    // this.setSelectionToCursor();
     if (this.isInlineCode()) {
       this.insert(this.selection.replaceAll('`', ''));
     } else {
@@ -423,7 +422,6 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   undo() {
-    console.log(this.history, this.historyIndex);
     if (this.canUndo()) {
       this.historyIndex--;
       this.value = this.history[this.historyIndex];
