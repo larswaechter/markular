@@ -9,7 +9,7 @@ import {
   input,
   InputSignal,
   output,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -49,6 +49,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   selStart = 0;
   selEnd = 0;
+  cursorPos = 0;
 
   _val = '';
   _options = computed<Options>(() =>
@@ -59,7 +60,6 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   private readonly elementRef = inject(ElementRef<HTMLInputElement>);
   private readonly sanitizer = inject(DomSanitizer);
-  private cursor = 0;
 
   constructor() {
     marked.setOptions({
@@ -95,7 +95,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     }
 
     const currentLineIdx = lineRanges.findIndex(
-      (line) => this.cursor >= line.from && this.cursor <= line.to,
+      (line) => this.cursorPos >= line.from && this.cursorPos <= line.to,
     );
 
     return { currentLineIdx, lines: lineRanges };
@@ -106,10 +106,13 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   _onTouched = () => {};
 
   writeValue(value: string) {
-    // console.log('write value', value);
     this._val = value || '';
     this.appendHistory();
     this.historyIndex--;
+
+    // Set selection to EOF
+    this.selStart = this.selEnd = this.cursorPos = this._val.length;
+
     // this.elementRef.nativeElement.querySelector('textarea').value = value;
   }
 
@@ -164,7 +167,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
       // Remove tab (4 spaces)
       if (event.shiftKey) {
-        if (this.selStart === this.cursor) {
+        if (this.selStart === this.cursorPos) {
           this.insert(
             this.selection
               .split('\n')
@@ -175,7 +178,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
         // Add tab (4 spaces)
       } else {
-        if (this.selStart === this.cursor) {
+        if (this.selStart === this.cursorPos) {
           this.insert(
             this.selection
               .split('\n')
@@ -183,8 +186,8 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
               .join('\n'),
           );
         } else {
-          this.selStart = this.cursor;
-          this.selEnd = this.cursor;
+          this.selStart = this.cursorPos;
+          this.selEnd = this.cursorPos;
           this.insert(' '.repeat(4));
         }
       }
@@ -204,20 +207,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   cacheSelection(ta: HTMLTextAreaElement) {
-    this.cursor = ta.selectionStart ?? 0;
+    this.cursorPos = ta.selectionStart ?? 0;
     this.selStart = ta.selectionStart ?? 0;
     this.selEnd = ta.selectionEnd ?? 0;
-
-    // Select current line if nothing selected
-    if (this.selStart === this.selEnd) {
-      const lines = this.lines;
-      if (lines.currentLineIdx >= 0) {
-        this.selStart = lines.lines[lines.currentLineIdx].from;
-        this.selEnd = lines.lines[lines.currentLineIdx].to;
-      }
-    }
-
-    // console.log('cacheSelection', this.selStart, this.selEnd, this.cursor);
+    // console.log('cacheSelection', this.selStart, this.selEnd, this.cursorPos);
   }
 
   /**
@@ -232,6 +225,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleHeading(size: number) {
+    if (this.isNoneSelected()) {
+      this.setSelectionToCurrentLine();
+    }
+
     if (this.selection.startsWith('#')) {
       const currentSize = this.countHashes(this.selection);
       if (currentSize === size) {
@@ -247,10 +244,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isBold() {
-    return (
-      this._val.slice(this.selStart, this.selStart + 2) === '**' &&
-      this._val.slice(this.selEnd - 2, this.selEnd) === '**'
-    );
+    return /^\*{2}.*\*{2}/.test(this.selection);
   }
 
   toggleBold() {
@@ -262,11 +256,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   isItalic() {
-    return (
-      !this.isBold() &&
-      this._val.slice(this.selStart, this.selStart + 1) === '*' &&
-      this._val.slice(this.selEnd - 1, this.selEnd) === '*'
-    );
+    return !this.isBold() && /^\*.*\*/.test(this.selection);
   }
 
   toggleItalic() {
@@ -282,6 +272,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleUnorderedList() {
+    if (this.isNoneSelected()) {
+      this.setSelectionToCurrentLine();
+    }
+
     if (this.isUnorderedList()) {
       const lines = this.selection
         .split('\n')
@@ -306,6 +300,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleOrderedList() {
+    if (this.isNoneSelected()) {
+      this.setSelectionToCurrentLine();
+    }
+
     if (this.isOrderedList()) {
       const lines = this.selection
         .split('\n')
@@ -374,6 +372,8 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleQuote() {
+    this.setSelectionToCurrentLine();
+
     if (this.isQuote()) {
       this.insert(this.selection.replace(/>\s?/, ''));
     } else {
@@ -401,7 +401,6 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   toggleInlineCode() {
-    // this.setSelectionToCursor();
     if (this.isInlineCode()) {
       this.insert(this.selection.replaceAll('`', ''));
     } else {
@@ -518,9 +517,16 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     });
   }
 
-  private setSelectionToCursor() {
-    this.selStart = this.cursor;
-    this.selEnd = this.cursor;
+  private isNoneSelected() {
+    return this.selStart === this.selEnd;
+  }
+
+  private setSelectionToCurrentLine() {
+    const lines = this.lines;
+    if (lines.currentLineIdx >= 0) {
+      this.selStart = lines.lines[lines.currentLineIdx].from;
+      this.selEnd = lines.lines[lines.currentLineIdx].to;
+    }
   }
 
   private updatePreview() {
