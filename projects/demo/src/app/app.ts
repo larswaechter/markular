@@ -11,8 +11,6 @@ import { Markular, Options } from 'markular';
 })
 export class App {
   form: FormGroup;
-
-  markdown: string = '# Hello World!';
   options: Options = {
     toolbar: {
       headings: [1, 2, 3],
@@ -24,7 +22,17 @@ export class App {
   protected readonly title = signal('demo');
 
   constructor(private formBuilder: FormBuilder) {
-    this.form = formBuilder.group({ markdown: ['# Hello World!'] });
+    this.form = formBuilder.group({
+      markdown: `# Simple Chocolate Cake
+
+- 200 g sugar
+- 150 g flour
+- 50 g cocoa powder
+- 120 ml milk
+- ...
+
+Bon appétit!`,
+    });
 
     this.form.get('markdown')?.valueChanges.subscribe((change) => {
       console.log('.subscribe change', change);
