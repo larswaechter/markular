@@ -9,7 +9,7 @@ import {
   input,
   InputSignal,
   output,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -39,7 +39,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   onChange = output<string>();
 
-  history: string[] = [];
+  history: { caretPosBefore: number; caretPosAfter: number; content: string }[] = [];
   historyIndex = 0;
 
   preview!: SafeHtml;
@@ -49,7 +49,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   selStart = 0;
   selEnd = 0;
-  cursorPos = 0;
+  caretPos = 0;
 
   _val = '';
   _options = computed<Options>(() =>
@@ -117,7 +117,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     }
 
     const currentLineIdx = lineRanges.findIndex(
-      (line) => this.cursorPos >= line.from && this.cursorPos <= line.to,
+      (line) => this.caretPos >= line.from && this.caretPos <= line.to,
     );
 
     return { currentLineIdx, lines: lineRanges };
@@ -129,11 +129,11 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   writeValue(value: string) {
     this._val = value || '';
-    this.appendHistory();
     this.historyIndex--;
 
     // Set selection to EOF
-    this.selStart = this.selEnd = this.cursorPos = this._val.length;
+    this.selStart = this.selEnd = this.caretPos = this._val.length;
+    this.appendHistory(this.selStart, this.selStart);
 
     // this.elementRef.nativeElement.querySelector('textarea').value = value;
   }
@@ -152,8 +152,8 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   ngAfterViewInit(): void {
     window.addEventListener('insertSnippet', (e: any) => {
-      const snippet: string = e.detail ?? '';
-      this.replaceSelection(snippet);
+      const snippet: string = e.detail.snippet;
+      this.replaceSelection(snippet, e.detail.moveCaret);
     });
   }
 
@@ -189,8 +189,8 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
       // Remove tab (4 spaces)
       if (event.shiftKey) {
-        if (this.selStart === this.cursorPos) {
-          this.insert(
+        if (this.selStart === this.caretPos) {
+          this.insertEnd(
             this.selection
               .split('\n')
               .map((line) => line.replace(/^\s{4}/, ''))
@@ -200,17 +200,17 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
         // Add tab (4 spaces)
       } else {
-        if (this.selStart === this.cursorPos) {
-          this.insert(
+        if (this.selStart === this.caretPos) {
+          this.insertEnd(
             this.selection
               .split('\n')
               .map((line) => ' '.repeat(4) + line)
               .join('\n'),
           );
         } else {
-          this.selStart = this.cursorPos;
-          this.selEnd = this.cursorPos;
-          this.insert(' '.repeat(4));
+          this.selStart = this.caretPos;
+          this.selEnd = this.caretPos;
+          this.insertEnd(' '.repeat(4));
         }
       }
 
@@ -221,7 +221,14 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   onInput(ta: HTMLTextAreaElement) {
     this.value = ta.value;
-    this.appendHistory();
+
+    if (this.selStart !== this.selEnd) {
+      this.appendHistory(this.selEnd, this.selStart);
+      this.caretPos = this.selStart;
+    } else {
+      this.appendHistory(this.caretPos, ta.selectionEnd);
+      this.caretPos = ta.selectionEnd;
+    }
   }
 
   toggleFocused() {
@@ -229,10 +236,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   }
 
   cacheSelection(ta: HTMLTextAreaElement) {
-    this.cursorPos = ta.selectionStart ?? 0;
+    this.caretPos = ta.selectionStart ?? 0;
     this.selStart = ta.selectionStart ?? 0;
     this.selEnd = ta.selectionEnd ?? 0;
-    // console.log('cacheSelection', this.selStart, this.selEnd, this.cursorPos);
+    // console.log('cacheSelection', this.selStart, this.selEnd);
   }
 
   /**
@@ -254,14 +261,14 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     if (this.selection.startsWith('#')) {
       const currentSize = this.countHashes(this.selection);
       if (currentSize === size) {
-        this.insert(this.unwrap('#'.repeat(size), ''));
+        this.insertStart(this.unwrap('#'.repeat(size), ''));
       } else if (size > currentSize) {
-        this.insert(this.wrap('#'.repeat(size - currentSize), '', false));
+        this.insertEnd(this.wrap('#'.repeat(size - currentSize), '', false));
       } else {
-        this.insert(this.unwrap('#'.repeat(currentSize - size), ''));
+        this.insertStart(this.unwrap('#'.repeat(currentSize - size), ''));
       }
     } else {
-      this.insert(this.wrap('#'.repeat(size), '', true));
+      this.insertEnd(this.wrap('#'.repeat(size), '', true));
     }
   }
 
@@ -271,9 +278,9 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleBold() {
     if (this.isBold()) {
-      this.insert(this.unwrap('**'));
+      this.insertEnd(this.unwrap('**'));
     } else {
-      this.insert(this.wrap('**'));
+      this.insertEnd(this.wrap('**'));
     }
   }
 
@@ -283,9 +290,9 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleItalic() {
     if (this.isItalic()) {
-      this.insert(this.unwrap('*'));
+      this.insertEnd(this.unwrap('*'));
     } else {
-      this.insert(this.wrap('*'));
+      this.insertEnd(this.wrap('*'));
     }
   }
 
@@ -304,18 +311,16 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
       const lines = this.selection
         .split('\n')
         .map((line) => (line ? line.replace(/^\s*-\s?/g, '') : ''));
-      this.insert(lines.join('\n'));
+      this.insertStart(lines.join('\n'));
+    } else if (this.isOrderedList()) {
+      const lines = this.selection.split('\n').map((line) => {
+        const tabs = this.countTabs(line);
+        return line.replace(/^\s*\d+\./, ' '.repeat(4 * tabs) + '-');
+      });
+      this.insertEnd(lines.join('\n'));
     } else {
-      if (this.isOrderedList()) {
-        const lines = this.selection.split('\n').map((line) => {
-          const tabs = this.countTabs(line);
-          return line.replace(/^\s*\d+\./, ' '.repeat(4 * tabs) + '-');
-        });
-        this.insert(lines.join('\n'));
-      } else {
-        const lines = this.selection.split('\n').map((line) => (line ? `- ${line}` : '- '));
-        this.insert(lines.join('\n'));
-      }
+      const lines = this.selection.split('\n').map((line) => (line ? `- ${line}` : '- '));
+      this.insertEnd(lines.join('\n'));
     }
   }
 
@@ -332,32 +337,30 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
       const lines = this.selection
         .split('\n')
         .map((line) => (line ? line.replace(/^\s*\d+\.\s?/g, '') : ''));
-      this.insert(lines.join('\n'));
+      this.insertStart(lines.join('\n'));
+    } else if (this.isUnorderedList()) {
+      const lineLevels = new Map();
+      const levelCounter = new Map();
+
+      this.selection.split('\n').forEach((line, i) => {
+        lineLevels.set(i, this.countTabs(line));
+      });
+
+      const lines = this.selection.split('\n').map((line, i) => {
+        line = line.replace(/^\s*-\s?/, '');
+
+        const tabs = lineLevels.get(i);
+        const n = (levelCounter.get(tabs) || 0) + 1;
+
+        levelCounter.set(tabs, n);
+
+        return ' '.repeat(4 * tabs) + `${n}. ${line}`;
+      });
+
+      this.insertEnd(lines.join('\n'));
     } else {
-      if (this.isUnorderedList()) {
-        const lineLevels = new Map();
-        const levelCounter = new Map();
-
-        this.selection.split('\n').forEach((line, i) => {
-          lineLevels.set(i, this.countTabs(line));
-        });
-
-        const lines = this.selection.split('\n').map((line, i) => {
-          line = line.replace(/^\s*-\s?/, '');
-
-          const tabs = lineLevels.get(i);
-          const n = (levelCounter.get(tabs) || 0) + 1;
-
-          levelCounter.set(tabs, n);
-
-          return ' '.repeat(4 * tabs) + `${n}. ${line}`;
-        });
-
-        this.insert(lines.join('\n'));
-      } else {
-        const lines = this.selection.split('\n').map((line, i) => `${i + 1}. ${line}`);
-        this.insert(lines.join('\n'));
-      }
+      const lines = this.selection.split('\n').map((line, i) => `${i + 1}. ${line}`);
+      this.insertEnd(lines.join('\n'));
     }
   }
 
@@ -367,11 +370,11 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleLink() {
     if (!this.isLink()) {
-      this.insert(`[${this.selection}](https://)`);
+      this.insertEnd(`[${this.selection}](https://)`);
     } else {
       const match = this.selection.match(/^\[(.*)]\(.*\)/);
       if (match?.length === 2) {
-        this.insert(match[1]);
+        this.insertEnd(match[1]);
       }
     }
   }
@@ -382,26 +385,28 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleImage() {
     if (!this.isImage()) {
-      this.insert(`![${this.selection}](https://)`);
+      this.insertEnd(`![${this.selection}](https://)`);
     } else {
       const match = this.selection.match(/^!\[(.*)]\(.*\)/);
       if (match?.length === 2) {
-        this.insert(match[1]);
+        this.insertEnd(match[1]);
       }
     }
   }
 
   isQuote() {
-    return /^>\s?/.test(this.selection);
+    return /^>\s?/.test(this.selectionOrCurrentLine);
   }
 
   toggleQuote() {
-    this.setSelectionToCurrentLine();
+    if (this.isNoneSelected()) {
+      this.setSelectionToCurrentLine();
+    }
 
     if (this.isQuote()) {
-      this.insert(this.selection.replace(/>\s?/, ''));
+      this.insertStart(this.selection.replace(/>\s?/, ''));
     } else {
-      this.insert(this.wrap('> ', ''));
+      this.insertEnd(this.wrap('> ', ''));
     }
   }
 
@@ -411,11 +416,11 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleCodeBlock() {
     if (!this.isCodeBlock()) {
-      this.insert('```ts\n' + this.selection + '\n```');
+      this.insertEnd('```ts\n' + this.selection + '\n```');
     } else {
       const match = this.selection.match(/`{3}\w*\n(.*)\n`{3}/);
       if (match?.length === 2) {
-        this.insert(match[1]);
+        this.insertEnd(match[1]);
       }
     }
   }
@@ -426,9 +431,9 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleInlineCode() {
     if (this.isInlineCode()) {
-      this.insert(this.selection.replaceAll('`', ''));
+      this.insertEnd(this.selection.replaceAll('`', ''));
     } else {
-      this.insert(this.wrap('`', '`'));
+      this.insertEnd(this.wrap('`', '`'));
     }
   }
 
@@ -438,25 +443,37 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   toggleDivider() {
     if (this.isDivider()) {
-      this.insert('');
+      this.insertEnd('');
     } else {
-      this.insert(this.wrap('\n---', '\n\n'));
+      this.insertEnd(this.wrap('\n---', '\n\n'));
     }
   }
 
   undo() {
     if (this.canUndo()) {
+      this.caretPos = this.history[this.historyIndex].caretPosBefore;
+
       this.historyIndex--;
-      this.value = this.history[this.historyIndex];
+      this.value = this.history[this.historyIndex].content;
       this.editorRef.nativeElement.focus();
+
+      setTimeout(() => {
+        this.editorRef.nativeElement.setSelectionRange(this.caretPos, this.caretPos);
+      });
     }
   }
 
   redo() {
     if (this.canRedo()) {
       this.historyIndex++;
-      this.value = this.history[this.historyIndex];
+      this.value = this.history[this.historyIndex].content;
+      this.caretPos = this.history[this.historyIndex].caretPosAfter;
+
       this.editorRef.nativeElement.focus();
+
+      setTimeout(() => {
+        this.editorRef.nativeElement.setSelectionRange(this.caretPos, this.caretPos);
+      });
     }
   }
 
@@ -512,8 +529,23 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     return selection.slice(from, selection.length - after.length);
   }
 
-  private insert(snippet: string) {
-    const event = new CustomEvent('insertSnippet', { detail: snippet });
+  /**
+   * Insert snippet and move caret to start of snippet
+   * @param snippet to insert
+   * @private
+   */
+  private insertStart(snippet: string) {
+    const event = new CustomEvent('insertSnippet', { detail: { snippet, moveCaret: 'start' } });
+    window.dispatchEvent(event);
+  }
+
+  /**
+   * Insert snippet and move caret to end of snippet
+   * @param snippet to insert
+   * @private
+   */
+  private insertEnd(snippet: string) {
+    const event = new CustomEvent('insertSnippet', { detail: { snippet, moveCaret: 'end' } });
     window.dispatchEvent(event);
   }
 
@@ -525,18 +557,34 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     return str.split(/[^#]/)[0].length;
   }
 
-  private replaceSelection(snippet: string) {
+  private replaceSelection(snippet: string, moveCaret: 'start' | 'end' = 'end') {
     const before = this._val.slice(0, this.selStart);
     const after = this._val.slice(this.selEnd);
 
+    // Replace selection
     this.value = before + snippet + after;
-    this.appendHistory();
 
-    // Move caret to end of inserted snippet
-    const caret = (before + snippet).length;
+    if (moveCaret === 'start') {
+      /**
+       * caretPosBefore is current position
+       * caretPosAfter is start of selection
+       */
+      this.appendHistory(this.caretPos, this.selStart);
+      this.caretPos = this.selStart;
+    } else {
+      /**
+       * caretPosBefore is current position
+       * caretPosAfter is after inserted snippet
+       */
+      this.appendHistory(this.caretPos, this.selStart + snippet.length);
+      this.caretPos = this.selStart + snippet.length;
+    }
+
+    // Move caret to start / end of inserted snippet
+
     setTimeout(() => {
       this.editorRef.nativeElement.focus();
-      this.editorRef.nativeElement.setSelectionRange(caret, caret);
+      this.editorRef.nativeElement.setSelectionRange(this.caretPos, this.caretPos);
       this.cacheSelection(this.editorRef.nativeElement);
     });
   }
@@ -559,10 +607,14 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
     this.preview = this.sanitizer.bypassSecurityTrustHtml(clean);
   }
 
-  private appendHistory() {
-    if (this._val !== this.history[this.historyIndex]) {
+  private appendHistory(caretPosBefore: number, caretPosAfter: number) {
+    if (this._val !== this.history[this.historyIndex]?.content) {
       this.history = this.history.slice(0, this.historyIndex + 1);
-      this.history.push(this._val ?? '');
+      this.history.push(
+        this._val
+          ? { caretPosBefore, caretPosAfter, content: this._val }
+          : { caretPosBefore: 0, caretPosAfter: 0, content: '' },
+      );
       this.historyIndex++;
     }
   }

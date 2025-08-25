@@ -35,15 +35,24 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleHeading(1);
+
       expect(component._val).toBe('# Hello');
+      expect(component.caretPos).toBe(7);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(0);
+      expect(component.history[0].caretPosAfter).toBe(7);
+      expect(component.history[0].content).toBe('# Hello');
     });
 
-    it('should insert H1 when subselect', () => {
+    it('should insert H2', () => {
       component._val = 'Hello';
-      component.selStart = 2;
-      component.selEnd = 3;
-      component.toggleHeading(1);
-      expect(component._val).toBe('He# llo');
+      component.selStart = 0;
+      component.selEnd = 5;
+      component.toggleHeading(2);
+
+      expect(component._val).toBe('## Hello');
+      expect(component.caretPos).toBe(8);
     });
 
     it('should insert H1 when none selected', () => {
@@ -51,13 +60,36 @@ describe('Markular', () => {
       component.selStart = 3;
       component.selEnd = 3;
       component.toggleHeading(1);
+
       expect(component._val).toBe('# Hello');
+      expect(component.caretPos).toBe(7);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(0);
+      expect(component.history[0].caretPosAfter).toBe(7);
+      expect(component.history[0].content).toBe('# Hello');
+    });
+
+    it('should insert H1 when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleHeading(1);
+
+      expect(component._val).toBe('He# llo');
+      expect(component.caretPos).toBe(5);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(0);
+      expect(component.history[0].caretPosAfter).toBe(5);
+      expect(component.history[0].content).toBe('He# llo');
     });
 
     it('should be H1', () => {
       component._val = '# Hello';
       component.selStart = 0;
       component.selEnd = 7;
+
       expect(component.isHeading(1)).toBeTruthy();
     });
 
@@ -65,6 +97,7 @@ describe('Markular', () => {
       component._val = '# Hello';
       component.selStart = 5;
       component.selEnd = 5;
+
       expect(component.isHeading(1)).toBeTruthy();
     });
 
@@ -72,6 +105,7 @@ describe('Markular', () => {
       component._val = '# Hello';
       component.selStart = 3;
       component.selEnd = 5;
+
       expect(component.isHeading(1)).toBeFalsy();
     });
 
@@ -80,7 +114,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 7;
       component.toggleHeading(1);
+
       expect(component._val).toBe('Hello');
+      expect(component.caretPos).toBe(0);
     });
 
     it('should convert H1 => H2', () => {
@@ -88,7 +124,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 7;
       component.toggleHeading(2);
+
       expect(component._val).toBe('## Hello');
+      expect(component.caretPos).toBe(8);
     });
 
     it('should convert H2 => H1', () => {
@@ -96,7 +134,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 8;
       component.toggleHeading(1);
+
       expect(component._val).toBe('# Hello');
+      expect(component.caretPos).toBe(0);
     });
   });
 
@@ -106,13 +146,53 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleBold();
+
       expect(component._val).toBe('**Hello**');
+      expect(component.caretPos).toBe(9);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(0);
+      expect(component.history[0].caretPosAfter).toBe(9);
+      expect(component.history[0].content).toBe('**Hello**');
+    });
+
+    it('should insert bold when none selected', () => {
+      component._val = 'Hello';
+      component.caretPos = 3;
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleBold();
+
+      expect(component._val).toBe('Hel****lo');
+      expect(component.caretPos).toBe(7);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(3);
+      expect(component.history[0].caretPosAfter).toBe(7);
+      expect(component.history[0].content).toBe('Hel****lo');
+    });
+
+    it('should insert bold when subselect', () => {
+      component._val = 'Hello';
+      component.caretPos = 2;
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleBold();
+
+      expect(component._val).toBe('He**l**lo');
+      expect(component.caretPos).toBe(7);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(2);
+      expect(component.history[0].caretPosAfter).toBe(7);
+      expect(component.history[0].content).toBe('He**l**lo');
     });
 
     it('should be bold', () => {
       component._val = '**Hello**';
       component.selStart = 0;
       component.selEnd = 9;
+
       expect(component.isBold()).toBeTruthy();
     });
 
@@ -120,6 +200,7 @@ describe('Markular', () => {
       component._val = '**Hello**';
       component.selStart = 0;
       component.selEnd = 9;
+
       expect(component.isItalic()).toBeFalse();
     });
 
@@ -128,23 +209,71 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 9;
       component.toggleBold();
+
       expect(component._val).toBe('Hello');
+      expect(component.caretPos).toBe(5);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(0);
+      expect(component.history[0].caretPosAfter).toBe(5);
+      expect(component.history[0].content).toBe('Hello');
     });
   });
 
   describe('Italic tests', () => {
     it('should insert italic', () => {
       component._val = 'Hello';
+      component.caretPos = 0;
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleItalic();
+
       expect(component._val).toBe('*Hello*');
+      expect(component.caretPos).toBe(7);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(0);
+      expect(component.history[0].caretPosAfter).toBe(7);
+      expect(component.history[0].content).toBe('*Hello*');
+    });
+
+    it('should insert italic when none selected', () => {
+      component._val = 'Hello';
+      component.caretPos = 3;
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleItalic();
+
+      expect(component._val).toBe('Hel**lo');
+      expect(component.caretPos).toBe(5);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(3);
+      expect(component.history[0].caretPosAfter).toBe(5);
+      expect(component.history[0].content).toBe('Hel**lo');
+    });
+
+    it('should insert italic when subselect', () => {
+      component._val = 'Hello';
+      component.caretPos = 2;
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleItalic();
+
+      expect(component._val).toBe('He*l*lo');
+      expect(component.caretPos).toBe(5);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(2);
+      expect(component.history[0].caretPosAfter).toBe(5);
+      expect(component.history[0].content).toBe('He*l*lo');
     });
 
     it('should be italic', () => {
       component._val = '*Hello*';
       component.selStart = 0;
       component.selEnd = 7;
+
       expect(component.isItalic()).toBeTruthy();
     });
 
@@ -153,7 +282,14 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 7;
       component.toggleItalic();
+
       expect(component._val).toBe('Hello');
+      expect(component.caretPos).toBe(5);
+
+      expect(component.history).toHaveSize(1);
+      expect(component.history[0].caretPosBefore).toBe(0);
+      expect(component.history[0].caretPosAfter).toBe(5);
+      expect(component.history[0].content).toBe('Hello');
     });
   });
 
@@ -163,15 +299,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleUnorderedList();
-      expect(component._val).toBe('- Hello');
-    });
 
-    it('should insert ul when subselect', () => {
-      component._val = 'Hello';
-      component.selStart = 2;
-      component.selEnd = 3;
-      component.toggleUnorderedList();
-      expect(component._val).toBe('He- llo');
+      expect(component._val).toBe('- Hello');
+      expect(component.caretPos).toBe(7);
     });
 
     it('should insert ul when none selected', () => {
@@ -179,7 +309,19 @@ describe('Markular', () => {
       component.selStart = 3;
       component.selEnd = 3;
       component.toggleUnorderedList();
+
       expect(component._val).toBe('- Hello');
+      expect(component.caretPos).toBe(7);
+    });
+
+    it('should insert ul when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleUnorderedList();
+
+      expect(component._val).toBe('He- llo');
+      expect(component.caretPos).toBe(5);
     });
 
     it('should insert ul multiline', () => {
@@ -187,13 +329,16 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 11;
       component.toggleUnorderedList();
+
       expect(component._val).toBe('- Hello\n- World');
+      expect(component.caretPos).toBe(15);
     });
 
     it('should be ul', () => {
       component._val = '- Hello';
       component.selStart = 0;
       component.selEnd = 7;
+
       expect(component.isUnorderedList()).toBeTruthy();
     });
 
@@ -201,6 +346,7 @@ describe('Markular', () => {
       component._val = '- Hello';
       component.selStart = 6;
       component.selEnd = 6;
+
       expect(component.isUnorderedList()).toBeTruthy();
     });
 
@@ -208,6 +354,7 @@ describe('Markular', () => {
       component._val = '- Hello\n- World';
       component.selStart = 0;
       component.selEnd = 11;
+
       expect(component.isUnorderedList()).toBeTruthy();
     });
 
@@ -215,6 +362,7 @@ describe('Markular', () => {
       component._val = '- Hello';
       component.selStart = 4;
       component.selEnd = 6;
+
       expect(component.isUnorderedList()).toBeFalsy();
     });
 
@@ -223,7 +371,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 7;
       component.toggleUnorderedList();
+
       expect(component._val).toBe('Hello');
+      expect(component.caretPos).toBe(0);
     });
 
     it('should remove ul multiline', () => {
@@ -231,7 +381,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 11;
       component.toggleUnorderedList();
+
       expect(component._val).toBe('Hello\nWorld');
+      expect(component.caretPos).toBe(0);
     });
 
     it('should remove ul nested multiline', () => {
@@ -239,15 +391,19 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 31;
       component.toggleUnorderedList();
+
       expect(component._val).toBe('abc\ndef\nghi\njkl');
+      expect(component.caretPos).toBe(0);
     });
 
     it('should convert ul => ol multiline', () => {
       component._val = '- Hello\n- World';
       component.selStart = 0;
-      component.selEnd = 11;
+      component.selEnd = 15;
       component.toggleOrderedList();
+
       expect(component._val).toBe('1. Hello\n2. World');
+      expect(component.caretPos).toBe(17);
     });
 
     it('should convert ul => ol nested multiline', () => {
@@ -255,7 +411,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 31;
       component.toggleOrderedList();
+
       expect(component._val).toBe('1. abc\n    1. def\n    2. ghi\n2. jkl');
+      expect(component.caretPos).toBe(35);
     });
   });
 
@@ -265,15 +423,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleOrderedList();
-      expect(component._val).toBe('1. Hello');
-    });
 
-    it('should insert ol when subselect', () => {
-      component._val = 'Hello';
-      component.selStart = 2;
-      component.selEnd = 3;
-      component.toggleOrderedList();
-      expect(component._val).toBe('He1. llo');
+      expect(component._val).toBe('1. Hello');
+      expect(component.caretPos).toBe(8);
     });
 
     it('should insert ol when none selected', () => {
@@ -281,7 +433,19 @@ describe('Markular', () => {
       component.selStart = 3;
       component.selEnd = 3;
       component.toggleOrderedList();
+
       expect(component._val).toBe('1. Hello');
+      expect(component.caretPos).toBe(8);
+    });
+
+    it('should insert ol when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleOrderedList();
+
+      expect(component._val).toBe('He1. llo');
+      expect(component.caretPos).toBe(6);
     });
 
     it('should insert ol multiline', () => {
@@ -289,13 +453,16 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 11;
       component.toggleOrderedList();
+
       expect(component._val).toBe('1. Hello\n2. World');
+      expect(component.caretPos).toBe(17);
     });
 
     it('should be ol', () => {
       component._val = '1. Hello';
       component.selStart = 0;
       component.selEnd = 8;
+
       expect(component.isOrderedList()).toBeTruthy();
     });
 
@@ -303,6 +470,7 @@ describe('Markular', () => {
       component._val = '1. Hello';
       component.selStart = 6;
       component.selEnd = 6;
+
       expect(component.isOrderedList()).toBeTruthy();
     });
 
@@ -310,6 +478,7 @@ describe('Markular', () => {
       component._val = '1. Hello\n2. World';
       component.selStart = 0;
       component.selEnd = 13;
+
       expect(component.isOrderedList()).toBeTruthy();
     });
 
@@ -317,6 +486,7 @@ describe('Markular', () => {
       component._val = '1. Hello';
       component.selStart = 4;
       component.selEnd = 6;
+
       expect(component.isOrderedList()).toBeFalsy();
     });
 
@@ -325,7 +495,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 8;
       component.toggleOrderedList();
+
       expect(component._val).toBe('Hello');
+      expect(component.caretPos).toBe(0);
     });
 
     it('should remove ol multiline', () => {
@@ -333,7 +505,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 13;
       component.toggleOrderedList();
+
       expect(component._val).toBe('Hello\nWorld');
+      expect(component.caretPos).toBe(0);
     });
 
     it('should remove ol nested multiline', () => {
@@ -341,7 +515,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 35;
       component.toggleOrderedList();
+
       expect(component._val).toBe('abc\ndef\nghi\njkl');
+      expect(component.caretPos).toBe(0);
     });
 
     it('should convert ol => ul multiline', () => {
@@ -349,7 +525,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 13;
       component.toggleUnorderedList();
+
       expect(component._val).toBe('- Hello\n- World');
+      expect(component.caretPos).toBe(11);
     });
 
     it('should convert ol => ul nested multiline', () => {
@@ -357,7 +535,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 35;
       component.toggleUnorderedList();
+
       expect(component._val).toBe('- abc\n    - def\n    - ghi\n- jkl');
+      expect(component.caretPos).toBe(31);
     });
   });
 
@@ -367,14 +547,53 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleQuote();
+
       expect(component._val).toBe('> Hello');
+      expect(component.caretPos).toBe(7);
+    });
+
+    it('should insert blockquote when none selected', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 2;
+      component.toggleQuote();
+
+      expect(component._val).toBe('> Hello');
+      expect(component.caretPos).toBe(7);
+    });
+
+    it('should insert blockquote when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 4;
+      component.toggleQuote();
+
+      expect(component._val).toBe('He> llo');
+      expect(component.caretPos).toBe(6);
     });
 
     it('should be blockquote', () => {
       component._val = '> Hello';
       component.selStart = 0;
       component.selEnd = 7;
+
       expect(component.isQuote()).toBeTruthy();
+    });
+
+    it('should be blockquote when none selected', () => {
+      component._val = '> Hello';
+      component.selStart = 5;
+      component.selEnd = 5;
+
+      expect(component.isQuote()).toBeTruthy();
+    });
+
+    it('should not be blockquote when subselect', () => {
+      component._val = '> Hello';
+      component.selStart = 3;
+      component.selEnd = 5;
+
+      expect(component.isQuote()).toBeFalsy();
     });
 
     it('should remove blockquote', () => {
@@ -382,7 +601,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 7;
       component.toggleQuote();
+
       expect(component._val).toBe('Hello');
+      expect(component.caretPos).toBe(0);
     });
   });
 
@@ -392,13 +613,16 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleCodeBlock();
+
       expect(component._val).toBe('```ts\nHello\n```');
+      expect(component.caretPos).toBe(15);
     });
 
     it('should be codeblock', () => {
       component._val = '```ts\nHello\n```';
       component.selStart = 0;
       component.selEnd = 15;
+
       expect(component.isCodeBlock()).toBeTruthy();
     });
 
@@ -407,7 +631,9 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 15;
       component.toggleCodeBlock();
+
       expect(component._val).toBe('Hello');
+      expect(component.caretPos).toBe(5);
     });
   });
 
@@ -417,13 +643,36 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleInlineCode();
+
       expect(component._val).toBe('`Hello`');
+      expect(component.caretPos).toBe(7);
+    });
+
+    it('should insert inline code when none selected', () => {
+      component._val = 'Hello';
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleInlineCode();
+
+      expect(component._val).toBe('Hel``lo');
+      expect(component.caretPos).toBe(5);
+    });
+
+    it('should insert inline code when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleInlineCode();
+
+      expect(component._val).toBe('He`l`lo');
+      expect(component.caretPos).toBe(5);
     });
 
     it('should be inline code', () => {
       component._val = '`Hello`';
       component.selStart = 0;
       component.selEnd = 7;
+
       expect(component.isInlineCode()).toBeTruthy();
     });
 
@@ -432,6 +681,7 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 7;
       component.toggleInlineCode();
+
       expect(component._val).toBe('Hello');
     });
   });
@@ -442,6 +692,7 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 0;
       component.toggleDivider();
+
       expect(component._val).toBe('\n---\n\n');
     });
 
@@ -449,6 +700,7 @@ describe('Markular', () => {
       component._val = '---';
       component.selStart = 0;
       component.selEnd = 3;
+
       expect(component.isDivider()).toBeTruthy();
     });
 
@@ -457,6 +709,7 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 3;
       component.toggleDivider();
+
       expect(component._val).toBe('');
     });
   });
@@ -467,13 +720,36 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleLink();
+
       expect(component._val).toBe('[Hello](https://)');
+      expect(component.caretPos).toBe(17);
+    });
+
+    it('should insert link when none selected', () => {
+      component._val = 'Hello';
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleLink();
+
+      expect(component._val).toBe('Hel[](https://)lo');
+      expect(component.caretPos).toBe(15);
+    });
+
+    it('should insert link when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleLink();
+
+      expect(component._val).toBe('He[l](https://)lo');
+      expect(component.caretPos).toBe(15);
     });
 
     it('should be link', () => {
       component._val = '[Hello](https://)';
       component.selStart = 0;
       component.selEnd = 17;
+
       expect(component.isLink()).toBeTruthy();
     });
 
@@ -481,6 +757,7 @@ describe('Markular', () => {
       component._val = '[Hello](https://)';
       component.selStart = 0;
       component.selEnd = 17;
+
       expect(component.isImage()).toBeFalsy();
     });
 
@@ -489,6 +766,7 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 17;
       component.toggleLink();
+
       expect(component._val).toBe('Hello');
     });
   });
@@ -499,13 +777,35 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 5;
       component.toggleImage();
+
       expect(component._val).toBe('![Hello](https://)');
+    });
+
+    it('should insert image when none selected', () => {
+      component._val = 'Hello';
+      component.selStart = 3;
+      component.selEnd = 3;
+      component.toggleImage();
+
+      expect(component._val).toBe('Hel![](https://)lo');
+      expect(component.caretPos).toBe(16);
+    });
+
+    it('should insert image when subselect', () => {
+      component._val = 'Hello';
+      component.selStart = 2;
+      component.selEnd = 3;
+      component.toggleImage();
+
+      expect(component._val).toBe('He![l](https://)lo');
+      expect(component.caretPos).toBe(16);
     });
 
     it('should be image', () => {
       component._val = '![Hello](https://)';
       component.selStart = 0;
       component.selEnd = 18;
+
       expect(component.isImage()).toBeTruthy();
     });
 
@@ -513,6 +813,7 @@ describe('Markular', () => {
       component._val = '![Hello](https://)';
       component.selStart = 0;
       component.selEnd = 18;
+
       expect(component.isLink()).toBeFalsy();
     });
 
@@ -521,6 +822,7 @@ describe('Markular', () => {
       component.selStart = 0;
       component.selEnd = 18;
       component.toggleImage();
+
       expect(component._val).toBe('Hello');
     });
   });
