@@ -2,6 +2,7 @@
   "name": "markular",
   "version": "0.0.5",
   "description": "A lightweight Markdown editor for Angular.",
+  "homepage": "https://larswaechter.github.io/markular",
   "author": {
     "name": "Lars Wächter",
     "url": "https://larswaechter.dev"

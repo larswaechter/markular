@@ -451,14 +451,17 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
 
   undo() {
     if (this.canUndo()) {
-      this.caretPos = this.history[this.historyIndex].caretPosBefore;
+      this.value = this.history[this.historyIndex - 1].content;
 
-      this.historyIndex--;
-      this.value = this.history[this.historyIndex].content;
+      this.selStart = this.caretPos = this.history[this.historyIndex].caretPosAfter;
+      this.selEnd = this.history[this.historyIndex].caretPosBefore;
+
       this.editorRef.nativeElement.focus();
 
+      this.historyIndex--;
+
       setTimeout(() => {
-        this.editorRef.nativeElement.setSelectionRange(this.caretPos, this.caretPos);
+        this.editorRef.nativeElement.setSelectionRange(this.caretPos, this.selEnd);
       });
     }
   }
@@ -472,7 +475,10 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
       this.editorRef.nativeElement.focus();
 
       setTimeout(() => {
-        this.editorRef.nativeElement.setSelectionRange(this.caretPos, this.caretPos);
+        this.editorRef.nativeElement.setSelectionRange(
+          this.history[this.historyIndex].caretPosBefore,
+          this.caretPos,
+        );
       });
     }
   }
@@ -610,11 +616,7 @@ export class Markular implements AfterViewInit, ControlValueAccessor {
   private appendHistory(caretPosBefore: number, caretPosAfter: number) {
     if (this._val !== this.history[this.historyIndex]?.content) {
       this.history = this.history.slice(0, this.historyIndex + 1);
-      this.history.push(
-        this._val
-          ? { caretPosBefore, caretPosAfter, content: this._val }
-          : { caretPosBefore: 0, caretPosAfter: 0, content: '' },
-      );
+      this.history.push({ caretPosBefore, caretPosAfter, content: this._val });
       this.historyIndex++;
     }
   }

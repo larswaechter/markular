@@ -1,6 +1,7 @@
 {
   "name": "markular-workspace",
   "version": "0.0.0",
+  "description": "NG Workspace for Markular. See projects/markular for library.",
   "scripts": {
     "serve": "ng serve demo",
     "build": "ng build markular --watch",

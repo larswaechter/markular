@@ -43,6 +43,7 @@ describe('Markular', () => {
       expect(component.history[0].caretPosBefore).toBe(0);
       expect(component.history[0].caretPosAfter).toBe(7);
       expect(component.history[0].content).toBe('# Hello');
+      expect(component.canUndo()).toBeTruthy();
     });
 
     it('should insert H2', () => {
