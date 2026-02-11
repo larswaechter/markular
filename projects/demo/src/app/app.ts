@@ -22,7 +22,15 @@ export class App {
 
   constructor(private formBuilder: FormBuilder) {
     this.form = this.formBuilder.group({
-      markdown: `abc\ndef`,
+      markdown:  `# Simple Chocolate Cake
+
+- 200 g sugar
+- 150 g flour
+- 50 g cocoa powder
+- 120 ml milk
+- ...
+
+Bon appétit!`,
     });
 
     this.form.get('markdown')?.valueChanges.subscribe((change) => {
